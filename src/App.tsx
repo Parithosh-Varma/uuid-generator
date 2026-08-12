@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 function makeUuid(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -101,6 +101,24 @@ function App() {
   }
 
   const history: HistoryItem[] = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') as HistoryItem[]
+
+  const handleKeyboard = useCallback((e: KeyboardEvent) => {
+    // Ctrl/Cmd + G to generate new UUIDs
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+      e.preventDefault()
+      regenerate()
+    }
+    // Ctrl/Cmd + Shift + C to copy all
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+      e.preventDefault()
+      copy('all')
+    }
+  }, [regenerate, copy])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyboard)
+    return () => window.removeEventListener('keydown', handleKeyboard)
+  }, [handleKeyboard])
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center transition-colors duration-300">
